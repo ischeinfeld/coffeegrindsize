@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coffeegrindsize"
+version = "1.1.0.dev0"
+description = "Local desktop analysis of coffee particle size distributions"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+license = "MIT"
+authors = [{name = "Jonathan Gagné"}, {name = "Isaac Scheinfeld"}]
+dependencies = [
+  "numpy>=2.5,<3",
+  "pandas>=3,<4",
+  "Pillow>=12,<13",
+  "matplotlib>=3.11,<4",
+]
+
+[project.scripts]
+coffeegrindsize = "coffeegrindsize:main"
+
+[project.urls]
+Repository = "https://github.com/ischeinfeld/coffeegrindsize"
+Upstream = "https://github.com/jgagneastro/coffeegrindsize"
+
+[dependency-groups]
+dev = ["pytest>=9", "ruff>=0.16", "mypy>=2", "pandas-stubs>=3"]
+
+[tool.setuptools]
+py-modules = ["coffeegrindsize"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gui: requires a working Tk display"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+extend-exclude = ["build_tools", "tests/fixtures/legacy_reference.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true

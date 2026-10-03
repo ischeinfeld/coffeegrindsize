@@ -10,7 +10,7 @@ import os
 import sys
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.ticker as mticker
@@ -912,7 +912,7 @@ class coffeegrindsize_GUI:
 			pixel_scale = float(self.pixel_length_var.get())/float(self.physical_length_var.get())
 			#Make it a string
 			pixel_scale_str = "{0:.{1}f}".format(pixel_scale, 3)
-		except:
+		except (ValueError, TypeError):
 			pixel_scale = None
 			pixel_scale_str = "None"
 		
@@ -1764,7 +1764,7 @@ class coffeegrindsize_GUI:
 		self.original_scale *= 2
 		
 		#Resize image
-		self.img_source = self.img_source.resize((int(float(self.img.size[0])/2),int(float(self.img.size[1])/2)), Image.ANTIALIAS)
+		self.img_source = self.img_source.resize((int(float(self.img.size[0])/2),int(float(self.img.size[1])/2)), Image.Resampling.LANCZOS)
 		self.img = self.img_source
 		
 		#Redraw the image
@@ -1877,7 +1877,7 @@ class coffeegrindsize_GUI:
 		#Read internal data
 		try:
 			threshold = float(self.threshold_var.get())
-		except:
+		except (ValueError, TypeError):
 			
 			#Update the user interface status
 			self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
@@ -2065,7 +2065,7 @@ class coffeegrindsize_GUI:
 			min_roundness_var = float(self.min_roundness_var.get())
 			reference_threshold = float(self.reference_threshold_var.get())
 			maxcost = float(self.maxcost_var.get())
-		except:
+		except (ValueError, TypeError):
 			
 			#Update the user interface status
 			self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
@@ -2500,7 +2500,7 @@ class coffeegrindsize_GUI:
 		#Read internal data
 		try:
 			pixel_scale = float(source.pixel_scale_var.get())
-		except:
+		except (ValueError, TypeError):
 			#Update the user interface status
 			self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
 			
@@ -2594,7 +2594,7 @@ class coffeegrindsize_GUI:
 			try:
 				xmin = float(self.xmin_var.get())
 				xmax = float(self.xmax_var.get())
-			except:
+			except (ValueError, TypeError):
 				#Update the user interface status
 				self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
 				
@@ -2618,7 +2618,7 @@ class coffeegrindsize_GUI:
 			else:
 				try:
 					nbins = int(np.round(float(self.nbins_var.get())))
-				except:
+				except (ValueError, TypeError):
 					#Update the user interface status
 					self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
 					
@@ -2766,7 +2766,7 @@ class coffeegrindsize_GUI:
 		#Read internal data
 		try:
 			pixel_scale = float(self.pixel_scale_var.get())
-		except:
+		except (ValueError, TypeError):
 			return
 		
 		diameters = 2*np.sqrt(self.clusters_long_axis*self.clusters_short_axis)/pixel_scale
@@ -2969,8 +2969,7 @@ class coffeegrindsize_GUI:
 		fig.canvas.draw()
 		
 		#Tranform the figure in a numpy array
-		figdata = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
-		figdata = figdata.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+		figdata = np.asarray(fig.canvas.buffer_rgba())[:, :, :3].copy()
 		
 		#Read the shape of the numpy array
 		fw, fh, fd = figdata.shape
@@ -3004,6 +3003,9 @@ class coffeegrindsize_GUI:
 		#Invoke a file dialog to select data file
 		csv_data_filename = filedialog.askopenfilename(initialdir=self.output_dir,title="Select a CSV data file",filetypes=(("csv files","*.csv"),("all files","*.*")))
 		
+		if not csv_data_filename:
+			return
+
 		#Create a Pandas dataframe from the CSV data
 		dataframe = pd.read_csv(csv_data_filename)
 		
@@ -3031,6 +3033,9 @@ class coffeegrindsize_GUI:
 		#Invoke a file dialog to select data file
 		csv_data_filename = filedialog.askopenfilename(initialdir=self.output_dir,title="Select a CSV data file",filetypes=(("csv files","*.csv"),("all files","*.*")))
 		
+		if not csv_data_filename:
+			return
+
 		#Create a Pandas dataframe from the CSV data
 		dataframe = pd.read_csv(csv_data_filename)
 		
@@ -3097,7 +3102,7 @@ class coffeegrindsize_GUI:
 		#Read internal data
 		try:
 			pixel_scale = float(self.pixel_scale_var.get())
-		except:
+		except (ValueError, TypeError):
 			#Update the user interface status
 			self.status_var.set("Some Options in the User Interface are Invalid Numbers...")
 			
@@ -3121,6 +3126,9 @@ class coffeegrindsize_GUI:
 		#Create a Pandas dataframe for stats
 		stats_dataframe = pd.DataFrame({"AVG_DIAM":[float(self.diam_average_var.get())],"STD_DIAM":[float(self.diam_stddev_var.get())], "AVG_SURF":[float(self.surf_average_var.get())],"STD_SURF":[float(self.surf_stddev_var.get())], "EFF":[float(self.eff_var.get())],"QUAL":[float(self.q_var.get())]})
 		
+		if not full_filename:
+			return
+
 		#Save files to CSV
 		dataframe.to_csv(full_filename)
 		
@@ -3181,6 +3189,9 @@ class coffeegrindsize_GUI:
 		else:
 			full_filename = filedialog.asksaveasfilename(initialdir=self.output_dir, initialfile=filename, title="Select an output file name")
 		
+		if not full_filename:
+			return
+
 		#Save file to PNG
 		self.img.save(full_filename)
 		
@@ -3197,27 +3208,22 @@ class coffeegrindsize_GUI:
 	
 	#Method to quit user interface
 	def quit_gui(self):
-		root.quit()
+		self.master.quit()
 	
 	#Method to display help
 	def launch_help(self):
 		webbrowser.open("https://www.dropbox.com/s/m2af0aer2e17xie/coffee_grind_size_manual.pdf?dl=0")
 
-# === Main loop and call to the user interface window ===
+def main():
+    """Launch the desktop application explicitly."""
+    root = Tk()
+    root.protocol('WM_DELETE_WINDOW', root.quit)
+    coffeegrindsize_GUI(root)
+    try:
+        root.mainloop()
+    finally:
+        root.destroy()
 
-#Invoke tkinter package
-root = Tk()
-root.protocol('WM_DELETE_WINDOW', root.quit)
 
-#Call the user interface
-coffeegrindsize_GUI(root)
-
-#Refresh user interface in a try statement to avoid UTF-8 crashes when the user interface tries to interpret unrecognized inputs like an Apple trackpad
-while True:
-	try:
-		root.mainloop()
-		break
-	except UnicodeDecodeError:
-		pass
-	#except:
-	#	pdb.set_trace()
+if __name__ == "__main__":
+    main()
