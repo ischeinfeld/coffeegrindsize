@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-coffeegrindsize = "coffeegrindsize:main"
+coffeegrindsize = "coffeegrindsize.app:main"
 
 [project.urls]
 Repository = "https://github.com/ischeinfeld/coffeegrindsize"
@@ -27,8 +27,11 @@ Upstream = "https://github.com/jgagneastro/coffeegrindsize"
 [dependency-groups]
 dev = ["pytest>=9", "ruff>=0.16", "mypy>=2", "pandas-stubs>=3"]
 
-[tool.setuptools]
-py-modules = ["coffeegrindsize"]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+coffeegrindsize = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

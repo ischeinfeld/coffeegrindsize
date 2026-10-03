@@ -16,7 +16,10 @@ def main():
     fixtures = ROOT / "tests" / "fixtures"
     images = {"synthetic": synthetic_image()}
     # Fixed full-resolution crops; no resizing or preprocessing changes.
-    for name, box in [("Better", (800, 800, 928, 928)), ("Decent", (800, 800, 928, 928))]:
+    for name, box in [
+        ("Better", (800, 800, 928, 928)),
+        ("Decent", (800, 800, 928, 928)),
+    ]:
         with Image.open(ROOT / "Help" / f"{name}_Example_Picture.png") as image:
             crop = image.convert("RGB").crop(box)
             crop.save(fixtures / f"{name.lower()}_crop.png")
@@ -25,8 +28,12 @@ def main():
     for name, image in images.items():
         for quick in (False, True):
             print(f"Capturing {name}, quick={quick}", flush=True)
-            captured[f"{name}_{'quick' if quick else 'full'}"] = snapshot(legacy(image, quick=quick))
-    (fixtures / "baseline.json").write_text(json.dumps(captured, indent=2, allow_nan=True) + "\n")
+            captured[f"{name}_{'quick' if quick else 'full'}"] = snapshot(
+                legacy(image, quick=quick)
+            )
+    (fixtures / "baseline.json").write_text(
+        json.dumps(captured, indent=2, allow_nan=True) + "\n"
+    )
 
 
 if __name__ == "__main__":
