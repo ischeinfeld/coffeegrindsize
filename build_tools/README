@@ -1,3 +1,7 @@
+HISTORICAL TOOLING: retained for provenance and future installer work.
+These scripts are not supported by the modern development environment.
+See ../docs/UPSTREAM.md.
+
 The build_tools directory contains scripts used for building Mac and
 Windows executables and packaging them in installers.
 
