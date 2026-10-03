@@ -230,6 +230,8 @@ def test_entrypoint_startup_and_shutdown(app, monkeypatch):
 
     app.master.after(50, app.master.destroy)
     monkeypatch.setattr(app_module.tk, "Tk", lambda: app.master)
-    entrypoint = next(iter(entry_points(group="console_scripts", name="coffeegrindsize")))
+    entrypoint = next(
+        iter(entry_points(group="console_scripts", name="coffeegrindsize"))
+    )
     assert entrypoint.load() is app_module.main
     app_module.main()
