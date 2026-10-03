@@ -1,0 +1,42 @@
+name: macOS checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      UV_PYTHON_DOWNLOADS: never
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Install matching Python and Tk
+        run: |
+          brew install uv python@3.14 python-tk@3.14
+          "$(brew --prefix python@3.14)/bin/python3.14" -c 'import tkinter; root = tkinter.Tk(); root.withdraw(); root.update(); root.destroy()'
+          uv venv --python "$(brew --prefix python@3.14)/bin/python3.14"
+      - name: Install locked dependencies
+        run: uv sync --locked
+      - name: Lint and formatting
+        run: |
+          uv run ruff check src tests tools
+          uv run ruff format --check src tests tools
+      - name: Type check the analysis and file/plot boundaries
+        run: uv run mypy src/coffeegrindsize/core.py src/coffeegrindsize/models.py src/coffeegrindsize/io.py src/coffeegrindsize/plotting.py
+      - name: Numerical regressions and native GUI workflows
+        env:
+          COFFEEGRINDSIZE_GUI_TESTS: "1"
+        run: uv run pytest -q
+      - name: Build installable wheel
+        run: uv build --wheel
